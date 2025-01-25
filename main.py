@@ -1,14 +1,13 @@
 import pygame
 import time
 import random
+import io
+import requests
 pygame.font.init()
 
 WIDTH, HEIGHT = 600, 600
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Pokemon Wars")
-
-BG = pygame.transform.scale(pygame.image.load("forest.jpg"), (WIDTH, HEIGHT))
-
 PLAYER_WIDTH = 50
 PLAYER_HEIGHT = 50
 PLAYER_VEL = 5
@@ -17,15 +16,22 @@ GAME_OVER_FONT = pygame.font.SysFont("comicsans", 50)
 STAR_WIDTH = 25
 STAR_HEIGHT = 30
 STAR_VEL = 5
-
-try:
-    POKEMON_SPRITE = pygame.transform.scale(pygame.image.load("char1.png"), (PLAYER_WIDTH, PLAYER_HEIGHT))
-    FALLING_SPRITE = pygame.transform.scale(pygame.image.load("drop.png"), (STAR_WIDTH, STAR_HEIGHT))
-except pygame.error as e:
-    print(f"Error loading sprite: {e}")
-    pygame.quit()
-    exit()
-
+def load_image_from_url(url, size):
+    try:
+        response = requests.get(url)
+        response.raise_for_status()  # Check for request errors
+        image = pygame.image.load(io.BytesIO(response.content))
+        return pygame.transform.scale(image, size)
+    except Exception as e:
+        print(f"Error loading image from {url}: {e}")
+        pygame.quit()
+        exit()
+BG_URL = "https://assets.pokemon.com//assets/cms2/img/misc/virtual-backgrounds/masters/forest.jpg"
+CHAR_URL = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS9NfUVP9l6LsekOL2muLOmSW4VqyYuotGF_g&s"
+DROP_URL = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRPnVghVcdpkHXbJ7vpQzQvn-M_LJjhrGi0hA&s"
+BG = load_image_from_url(BG_URL, (WIDTH, HEIGHT))
+POKEMON_SPRITE = load_image_from_url(CHAR_URL, (PLAYER_WIDTH, PLAYER_HEIGHT))
+FALLING_SPRITE = load_image_from_url(DROP_URL, (STAR_WIDTH, STAR_HEIGHT))
 def draw(player_x, player_y, elapsed_time, stars, lost):
     WIN.blit(BG, (0, 0))
     if not lost:
